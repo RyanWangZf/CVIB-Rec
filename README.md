@@ -1,2 +1,2 @@
-# VITA-Rec
-Official Implementation of Variational Information Regularization for Debiasing Embeddings in Recommendation.
+# CVIB-Rec
+Official Implementation of Counterfactual Variational Information Bottleneck for Recommendation.
