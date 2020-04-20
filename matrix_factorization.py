@@ -43,10 +43,11 @@ class MF_CVIB(nn.Module):
 
     def fit(self, x, y, 
         num_epoch=1000, batch_size=128, lr=0.05, lamb=0, 
-        alpha=0.1,
+        alpha=0.1, gamma=0.01,
         tol=1e-4, verbose=True):
 
         self.alpha = alpha
+        self.gamma = gamma
 
         optimizer = torch.optim.Adam(self.parameters(), lr=lr, weight_decay=lamb)
         last_loss = 1e9
@@ -87,11 +88,11 @@ class MF_CVIB(nn.Module):
                 # log_pul = F.log_softmax(pred_ul, dim=0)
                 
                 logp_hat = F.log_softmax(pred, dim=0)
-                info_loss = torch.mean(-pred_ul * logp_hat) + 0.01 * torch.mean(pred * logp_hat)
+                info_loss = self.alpha * torch.mean(-pred_ul * logp_hat) + self.gamma* torch.mean(pred * logp_hat)
 
                 # info_loss = torch.mean((pred_ul-pred)**2)
 
-                loss = xent_loss + self.alpha * info_loss
+                loss = xent_loss + info_loss
 
                 optimizer.zero_grad()
                 loss.backward()
