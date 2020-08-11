@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import numpy as np
+from collections import defaultdict
 
 # environmental setting
 NUM_USER = 10
@@ -231,5 +232,37 @@ def generate_rcts(num_sample, USER_PREF_MAT):
         idx2.reshape(-1,1)], axis=1)
 
     return x , y
+
+def ndcg_func(model, x_te, y_te, top_k_list = [5, 10]):
+    """Evaluate nDCG@K of the trained model on test dataset.
+    """
+    all_user_idx = np.unique(x_te[:,0])
+    all_tr_idx = np.arange(len(x_te))
+    result_map = defaultdict(list)
+
+    for uid in all_user_idx:
+        u_idx = all_tr_idx[x_te[:,0] == uid]
+        x_u = x_te[u_idx]
+        y_u = y_te[u_idx]
+        pred_u = model.predict(x_u)
+
+        for top_k in top_k_list:
+            pred_top_k = np.argsort(-pred_u)[:top_k]
+            count = y_u[pred_top_k].sum()
+
+            log2_iplus1 = np.log2(1+np.arange(1,top_k+1))
+
+            dcg_k = y_u[pred_top_k] / log2_iplus1
+
+            best_dcg_k = y_u[np.argsort(-y_u)][:top_k] / log2_iplus1
+
+            if np.sum(best_dcg_k) == 0:
+                ndcg_k = 1
+            else:
+                ndcg_k = np.sum(dcg_k) / np.sum(best_dcg_k)
+
+            result_map["ndcg_{}".format(top_k)].append(ndcg_k)
+
+    return result_map
 
 

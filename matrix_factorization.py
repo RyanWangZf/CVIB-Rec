@@ -57,6 +57,7 @@ class MF_CVIB(nn.Module):
 
         num_sample = len(x)
         total_batch = num_sample // batch_size
+        early_stop = 0
 
         for epoch in range(num_epoch):
             all_idx = np.arange(num_sample)
@@ -84,13 +85,8 @@ class MF_CVIB(nn.Module):
                 pred_ul,_,_ = self.forward(x_sampled, True)
                 pred_ul = self.sigmoid(pred_ul)
 
-                # log_p = sub_y.log()
-                # log_pul = F.log_softmax(pred_ul, dim=0)
-                
-                logp_hat = F.log_softmax(pred, dim=0)
-                info_loss = self.alpha * torch.mean(-pred_ul * logp_hat) + self.gamma* torch.mean(pred * logp_hat)
-
-                # info_loss = torch.mean((pred_ul-pred)**2)
+                logp_hat = pred.log()
+                info_loss = self.alpha * torch.mean(-pred_ul * logp_hat - (1 - pred_ul) * logp_hat) + self.gamma* torch.mean(pred * logp_hat)
 
                 loss = xent_loss + info_loss
 
@@ -102,8 +98,10 @@ class MF_CVIB(nn.Module):
 
             relative_loss_div = (last_loss-epoch_loss)/(last_loss+1e-10)
             if  relative_loss_div < tol:
-                print("[MF-CVIB] epoch:{}, xent:{}".format(epoch, epoch_loss))
-                break
+                if early_stop > 5:
+                    print("[MF-CVIB] epoch:{}, xent:{}".format(epoch, epoch_loss))
+                    break
+                early_stop += 1
                 
             last_loss = epoch_loss
 
@@ -154,6 +152,7 @@ class MF(nn.Module):
         num_sample = len(x)
         total_batch = num_sample // batch_size
 
+        early_stop = 0
         for epoch in range(num_epoch):
             all_idx = np.arange(num_sample)
             np.random.shuffle(all_idx)
@@ -180,8 +179,10 @@ class MF(nn.Module):
 
             relative_loss_div = (last_loss-epoch_loss)/(last_loss+1e-10)
             if  relative_loss_div < tol:
-                print("[MF] epoch:{}, xent:{}".format(epoch, epoch_loss))
-                break
+                if early_stop > 5:
+                    print("[MF] epoch:{}, xent:{}".format(epoch, epoch_loss))
+                    break
+                early_stop += 1
                 
             last_loss = epoch_loss
 
@@ -232,7 +233,7 @@ class MF_IPS(nn.Module):
         num_sample = len(x)
         total_batch = num_sample // batch_size
 
-
+        early_stop = 0
         if y_ips is None:
             one_over_zl = self._compute_IPS(x, y)
         else:
@@ -270,8 +271,10 @@ class MF_IPS(nn.Module):
 
             relative_loss_div = (last_loss-epoch_loss)/(last_loss+1e-10)
             if  relative_loss_div < tol:
-                print("[MF-IPS] epoch:{}, xent:{}".format(epoch, epoch_loss))
-                break
+                if early_stop > 5:
+                    print("[MF-IPS] epoch:{}, xent:{}".format(epoch, epoch_loss))
+                    break
+                early_stop += 1
                 
             last_loss = epoch_loss
 
@@ -349,7 +352,7 @@ class MF_DR(nn.Module):
             one_over_zl = self._compute_IPS(x, y, y_ips)
 
         prior_y = y_ips.mean()
-
+        early_stop = 0
         for epoch in range(num_epoch):
             all_idx = np.arange(num_sample)
             np.random.shuffle(all_idx)
@@ -399,8 +402,10 @@ class MF_DR(nn.Module):
 
             relative_loss_div = (last_loss-epoch_loss)/(last_loss+1e-10)
             if  relative_loss_div < tol:
-                print("[MF-DR] epoch:{}, xent:{}".format(epoch, epoch_loss))
-                break
+                if early_stop > 5:
+                    print("[MF-DR] epoch:{}, xent:{}".format(epoch, epoch_loss))
+                    break
+                early_stop += 1
                 
             last_loss = epoch_loss
 
@@ -476,6 +481,7 @@ class MF_SNIPS(nn.Module):
         else:
             one_over_zl = self._compute_IPS(x, y, y_ips)
 
+        early_stop = 0
         for epoch in range(num_epoch):
             all_idx = np.arange(num_sample)
             np.random.shuffle(all_idx)
@@ -512,8 +518,10 @@ class MF_SNIPS(nn.Module):
 
             relative_loss_div = (last_loss-epoch_loss)/(last_loss+1e-10)
             if  relative_loss_div < tol:
-                print("[MF-SNIPS] epoch:{}, xent:{}".format(epoch, epoch_loss))
-                break
+                if early_stop > 5:
+                    print("[MF-SNIPS] epoch:{}, xent:{}".format(epoch, epoch_loss))
+                    break
+                early_stop += 1
                 
             last_loss = epoch_loss
 
@@ -597,6 +605,7 @@ class NCF(nn.Module):
         num_sample = len(x)
         total_batch = num_sample // batch_size
 
+        early_stop = 0
         for epoch in range(num_epoch):
             all_idx = np.arange(num_sample)
             np.random.shuffle(all_idx)
@@ -621,8 +630,10 @@ class NCF(nn.Module):
 
             relative_loss_div = (last_loss-epoch_loss)/(last_loss+1e-10)
             if  relative_loss_div < tol:
-                print("[NCF] epoch:{}, xent:{}".format(epoch, epoch_loss))
-                break
+                if early_stop > 5:
+                    print("[NCF] epoch:{}, xent:{}".format(epoch, epoch_loss))
+                    break
+                early_stop += 1
                 
             last_loss = epoch_loss
 
@@ -700,6 +711,7 @@ class NCF_IPS(nn.Module):
         else:
             one_over_zl = self._compute_IPS(x, y, y_ips)
 
+        early_stop = 0
         for epoch in range(num_epoch):
             all_idx = np.arange(num_sample)
             np.random.shuffle(all_idx)
@@ -728,8 +740,10 @@ class NCF_IPS(nn.Module):
 
             relative_loss_div = (last_loss-epoch_loss)/(last_loss+1e-10)
             if  relative_loss_div < tol:
-                print("[NCF-IPS] epoch:{}, xent:{}".format(epoch, epoch_loss))
-                break
+                if early_stop > 5:
+                    print("[NCF-IPS] epoch:{}, xent:{}".format(epoch, epoch_loss))
+                    break
+                early_stop += 1
                 
             last_loss = epoch_loss
 
@@ -824,6 +838,7 @@ class NCF_SNIPS(nn.Module):
         else:
             one_over_zl = self._compute_IPS(x, y, y_ips)
 
+        early_stop = 0
         for epoch in range(num_epoch):
             all_idx = np.arange(num_sample)
             np.random.shuffle(all_idx)
@@ -853,8 +868,10 @@ class NCF_SNIPS(nn.Module):
 
             relative_loss_div = (last_loss-epoch_loss)/(last_loss+1e-10)
             if  relative_loss_div < tol:
-                print("[NCF-SNIPS] epoch:{}, xent:{}".format(epoch, epoch_loss))
-                break
+                if early_stop > 5:
+                    print("[NCF-SNIPS] epoch:{}, xent:{}".format(epoch, epoch_loss))
+                    break
+                early_stop += 1
                 
             last_loss = epoch_loss
 
@@ -950,7 +967,7 @@ class NCF_CVIB(nn.Module):
 
         num_sample = len(x)
         total_batch = num_sample // batch_size
-
+        early_stop = 0
         for epoch in range(num_epoch):
             all_idx = np.arange(num_sample)
             np.random.shuffle(all_idx)
@@ -980,13 +997,10 @@ class NCF_CVIB(nn.Module):
                 pred_ul,_,_ = self.forward(x_sampled, True)
                 pred_ul = self.sigmoid(pred_ul)
                 
-                logp_hat = F.log_softmax(pred, dim=0)
-                info_loss = -torch.mean(pred_ul * logp_hat + (1-pred_ul)*F.log_softmax(1-pred,dim=0))
-                
-                # info_loss = -torch.mean(pred_ul * logp_hat)
-                ent_loss = -torch.mean(pred * logp_hat)
+                logp_hat = pred.log()
+                info_loss = self.alpha * torch.mean(-pred_ul * logp_hat - (1 - pred_ul) * logp_hat) + self.gamma* torch.mean(pred * logp_hat)
 
-                loss = xent_loss + alpha * info_loss - gamma * ent_loss
+                loss = xent_loss + info_loss
                 
                 optimizer.zero_grad()
                 loss.backward()
@@ -997,8 +1011,10 @@ class NCF_CVIB(nn.Module):
             relative_loss_div = (last_loss-epoch_loss)/(last_loss+1e-10)
             
             if  relative_loss_div < tol:
-                print("[NCF-CVIB] epoch:{}, xent:{}".format(epoch, epoch_loss))
-                break
+                if early_stop > 5:
+                    print("[NCF-CVIB] epoch:{}, xent:{}".format(epoch, epoch_loss))
+                    break
+                early_stop += 1
                 
             last_loss = epoch_loss
 
@@ -1076,7 +1092,7 @@ class NCF_DR(nn.Module):
             one_over_zl = self._compute_IPS(x, y, y_ips)
 
         prior_y = y_ips.mean()
-
+        early_stop = 0
         for epoch in range(num_epoch):
             all_idx = np.arange(num_sample)
             np.random.shuffle(all_idx)
@@ -1126,8 +1142,10 @@ class NCF_DR(nn.Module):
 
             relative_loss_div = (last_loss-epoch_loss)/(last_loss+1e-10)
             if  relative_loss_div < tol:
-                print("[NCF-DR] epoch:{}, xent:{}".format(epoch, epoch_loss))
-                break
+                if early_stop > 5:
+                    print("[NCF-DR] epoch:{}, xent:{}".format(epoch, epoch_loss))
+                    break
+                early_stop += 1
                 
             last_loss = epoch_loss
 
@@ -1176,13 +1194,3 @@ def one_hot(x):
 def sharpen(x, T):
     temp = x**(1/T)
     return temp / temp.sum(1, keepdim=True)
-
-
-
-
-
-
-
-
-
-
