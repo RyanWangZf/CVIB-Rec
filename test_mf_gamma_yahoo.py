@@ -19,8 +19,8 @@ from utils import gini_index, get_user_wise_ctr, rating_mat_to_sample, binarize,
 mse_func = lambda x,y: np.mean((x-y)**2)
 acc_func = lambda x,y: np.sum(x == y) / len(x)
 
-dataset_name = "coat"
-# dataset_name = "yahoo"
+# dataset_name = "coat"
+dataset_name = "yahoo"
 
 if dataset_name == "coat":
     train_mat, test_mat = load_data("coat")        
@@ -63,8 +63,8 @@ for gamma in gamma_list:
         mf_cvib = MF_CVIB(num_user, num_item)
         mf_cvib.fit(x_train, y_train,
             lr=0.01,
-            batch_size=128,
-            lamb=1e-4,
+            batch_size=2048,
+            lamb=1e-5,
             alpha=1.0,
             gamma=gamma,
             tol=1e-5,

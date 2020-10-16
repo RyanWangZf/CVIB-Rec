@@ -49,8 +49,10 @@ def setup_seed(seed):
 "MF-CVIB parameter invariance"
 output_prefix = "./demo/"
 
-alpha_list = [0.1,1e-2,1e-3,1e-4]
-gamma_list = [1,0.1,1e-2,1e-3,1e-4]
+# alpha_list = [0.1,1e-2,1e-3,1e-4]
+# gamma_list = [1,0.1,1e-2,1e-3,1e-4]
+alpha_list = [2,1,0.5,0.1]
+gamma_list = [1,0.1,1e-2,1e-3]
 
 alpha_result = []
 col_name = []
